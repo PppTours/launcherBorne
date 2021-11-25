@@ -1,7 +1,7 @@
 
 public enum Category{
 	SOLO("solo"),
-	CO-OP("co-op"),
+	COOP("co-op"),
 	VERSUS("versus"),
 	SHOOT_THEM_UP("shoot them up"),
 	RPG("rpg"),
