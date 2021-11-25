@@ -12,4 +12,14 @@ public enum Category{
 	PUZZLE("puzzle"),
 	BEAT_THEM_UP("beat them up"),
 	JEU_DE_COMBAT("jeu de combat");
+	
+	private String category_name;
+	
+	private Category(String str){
+		category_name = str;
+	}
+	
+	public String getName(){
+		return category_name;
+	}
 }
