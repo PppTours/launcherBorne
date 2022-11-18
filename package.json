@@ -4,13 +4,14 @@
     "description": "A game launcher",
     "main": "main.js",
     "dependencies": {
-      "express": "^4.17.1"
+        "express": "^4.17.1",
+        "ws": "^8.11.0"
     },
     "scripts": {
-      "start": "node main.js"
+        "start": "node main.js"
     },
     "type": "commonjs",
     "keywords": [],
     "author": "Albin Calais",
     "license": "ISC"
-  }
+}

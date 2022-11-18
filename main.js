@@ -1,8 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { runGame, forciblyKillGame } = require('./games-manager.js');
+const { runGame, forciblyKillGame, gameEvents } = require('./games-manager.js');
 const { Logger } = require('./loggers.js');
+const WebSocket = require('ws');
 
 const GAMES_DIR = path.join(__dirname, 'games');
 
@@ -53,6 +54,9 @@ function api_killGame(req, res) {
 
 function createServer() {
     const app = express();
+    const wsServer = new WebSocket.Server({ noServer: true });
+    const wsClients = new Map();
+
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     // api/getgames returns a list of available games 
@@ -73,9 +77,36 @@ function createServer() {
     app.use((_req, res) => {
         res.redirect('/');
     });
-    app.listen(port, () => {
+    // handle websocket connections
+    wsServer.on('connection', (ws) => {
+        let clientId = Math.random().toString(36).substring(2, 9);
+        let logger = new Logger('ws-'+clientId.substring(0,2));
+        logger.log('socket connected');
+        wsClients.set(clientId, { socket: ws, logger: logger });
+        // the client is not supposed to send anything, do not add a 'message' event listener
+        ws.on('close', () => {
+            wsClients.delete(clientId);
+            logger.log('socket disconnected');
+        });
+    });
+    // broadcast a message when a game event occurs
+    gameEvents.on('game-exit', ({code}) => {
+        for(let client of wsClients.values()) {
+            client.socket.send(JSON.stringify({ action: 'game-exit', response: { code } }));
+        }
+    });
+
+    // actually create the server
+    const server = app.listen(port, () => {
         console.log(`Running on http://localhost:${port} ...`);
     });
+    // handle websocket connections (to send data from the server to the client)
+    server.on('upgrade', (req, socket, head) => {
+        wsServer.handleUpgrade(req, socket, head, (ws) => {
+            wsServer.emit('connection', ws, req);
+        });
+    });
 }
+
 
 createServer();

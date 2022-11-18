@@ -1,7 +1,9 @@
 const { spawn } = require('child_process');
+const EventEmitter = require('events');
 const { Logger } = require('./loggers.js');
 
 const logger = new Logger('game');
+const gameEvents = new EventEmitter();
 
 var runningInstance = null;
 
@@ -31,6 +33,7 @@ function runInstance(command, args, executionPath) {
                 logger.log(`Game exited with code ${code}`);
             }
             runningInstance = null;
+            gameEvents.emit('game-exit', { code });
         });
         instance.on('error', (err) => {
             logger.error('Game error: ' + err);
@@ -50,4 +53,5 @@ function forciblyKillGame() {
 module.exports = {
     runGame,
     forciblyKillGame,
+    gameEvents,
 };

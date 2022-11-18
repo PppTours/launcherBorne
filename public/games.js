@@ -50,13 +50,6 @@ async function launchGame(game) {
     return await HTMLUtils.sendRequest(`/api/launchgame/${game.info.id}`, {}, { receiveJSON: false });
 }
 
-function promptInfo(message) {
-    let info = document.createElement('li');
-    info.innerHTML = message;
-    infoPopup.appendChild(info)
-    setTimeout(() => info.remove(), 4000);
-}
-
 const gamesCarousel = {
     _currentScroll: 0, // 0,N
     _targetScroll: 0,  // 0..N
@@ -163,3 +156,4 @@ window.addEventListener('keydown', async (ev) => {
         break;
     }
 });
+

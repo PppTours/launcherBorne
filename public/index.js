@@ -1,3 +1,15 @@
+/* ----------------------------------------------------------------- */
+/* ---------------------------- UI elements ------------------------ */
+/* ----------------------------------------------------------------- */
+
+function promptInfo(message, permanent=false) {
+    let info = document.createElement('li');
+    info.innerHTML = message;
+    infoPopup.appendChild(info);
+    if(!permanent)
+        setTimeout(() => info.remove(), 4000);
+}
+
 const Background = {
     canvas: null,
     context: null,
@@ -75,7 +87,9 @@ window.addEventListener('load', () => {
     Background.init();
 });
 
-// Sound library
+/* ----------------------------------------------------------------- */
+/* -------------------------- Sound library ------------------------ */
+/* ----------------------------------------------------------------- */
 
 function loadAudio(path, options={}) {
     let bufferCount = options.bufferCount || 1;
