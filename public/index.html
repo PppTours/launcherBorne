@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="games-page.css">
+    <link rel="stylesheet" href="front-page.css">
+
+    <script src="extensions-html.js"></script>
+    <script src="extensions-math.js"></script>
+    <script src="index.js"></script>
+    <script src="games.js" defer></script>
+</head>
+<body>
+    <div>
+        <div id="background-gradient"></div>
+        <canvas id="background-canvas"></canvas>
+        <ul id="info-popup"></ul>
+    </div>
+
+    <div id="front-page" class="main-page active">
+        <img id="master-logo" src="/media/p++.png">
+        <span class="flickering">PRESS ANY KEY TO START</span>
+    </div>
+
+    <div id="games-page" class="main-page">
+        <header>
+            <svg class="top-lineart" viewBox=".5 2 31 2" preserveAspectRatio="none">
+                <path stroke-width=".4" fill="black" d="M0 0 32 0 32 3 0 3 0 0" />
+            </svg>
+            <!-- <img class="logo" src="media/p++.png"> -->
+        </header>
+        <div id="games-list">
+            <template id="game-display-template">
+                <div class="game-display">
+                    <h3 id="t-name"></h3>
+                    <div class="game-vignette">
+                        <img id="t-vignette">
+                    </div>
+                    <div id="t-description" class="game-description"></div>
+                    <div id="t-info" class="game-info"></div>
+                    <div id="t-tags" class="game-tags-list"></div>
+                </div>
+            </template>
+            <template id="game-tag-template">
+                <span id="t-tag-name"></span>
+            </template>
+        </div>
+        <footer>
+            <!-- <svg class="bottom-lineart" viewBox="0 -1.5 32 3" preserveAspectRatio="none"> -->
+            <svg class="bottom-lineart" viewBox=".5 -1.5 31 3" preserveAspectRatio="none">
+                <path stroke-width=".4" fill="black" d="M0 0 11 0 12-1 20-1 21 0 32 0 32 3 0 3 0 0" />
+            </svg>
+            <h2 class="game-title">Title</h2>
+            <span class="flickering">Press A to play!</span>
+        </footer>
+    </div>
+</body>
+<style>
+
+
+
+</style>
+</html>

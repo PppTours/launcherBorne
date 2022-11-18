@@ -1,0 +1,26 @@
+#master-logo {
+    width: 40vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#front-page > span {
+    font-family: var(--f-bold);
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+#front-page {
+    transition: opacity ease .5s;
+}
+
+#front-page.fading {
+    opacity: 0;
+}
+#front-page:not(.active) {
+    display: none;
+}

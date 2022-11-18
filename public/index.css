@@ -1,0 +1,78 @@
+@font-face {
+    font-family: "BoldRetro";
+    src: url('fonts/ka1.ttf');
+}
+@font-face {
+    font-family: "RetroFont";
+    src: url('fonts/ARCADEPI.TTF');
+}
+
+body {
+    font-family: 'RetroFont', sans-serif;
+    background-color: black;
+    color: white;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+
+    --c-background: rgb(43, 43, 158);
+    --c-background-gradient-0: rgb(43, 43, 158);
+    --c-background-gradient-1: rgba(12, 12, 135, 0.608);
+    --c-background-gradient-2: transparent;
+    --c-main-1: #444cf7;
+
+    --f-bold: 'BoldRetro', 'RetroFont', sans-serif;
+    --f-regular: 'RetroFont', sans-serif;
+}
+
+.main-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.flickering {
+    animation: flickering-anim 2s steps(2, jump-none) 0s infinite;
+}
+
+#background-canvas {
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    z-index: -100;
+}
+
+#background-gradient {
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    z-index: -101;
+    background: linear-gradient(0deg,
+        var(--c-background-gradient-0) 0%,
+        var(--c-background-gradient-1) 50%, 
+        var(--c-background-gradient-2) 100%);
+}
+
+#info-popup {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 0;
+    z-index: 200;
+}
+
+#info-popup > * {
+    background-color: rgba(179, 37, 37, 0.8);
+    padding: 10px;
+    margin: 5px;
+    list-style-type: none;
+    z-index: 100;
+}
+
+@keyframes flickering-anim {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
