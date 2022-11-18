@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="games-page.css">
     <link rel="stylesheet" href="front-page.css">
+    <link rel="stylesheet" href="playing-game-page.css">
 
     <script src="extensions-html.js"></script>
     <script src="extensions-math.js"></script>
@@ -35,8 +36,9 @@
             </svg>
         </header>
         <div id="games-list">
-            <template id="game-display-template">
-                <div class="game-display">
+            <!-- this template will be cloned and filled for each game cartridge -->
+            <template id="game-cartridge-template">
+                <div class="game-cartridge">
                     <h3 id="t-name"></h3>
                     <div class="game-vignette">
                         <img id="t-vignette">
@@ -57,6 +59,16 @@
             <h2 class="game-title">Title</h2>
             <span class="flickering">Press A to play!</span>
         </footer>
+    </div>
+
+    <div id="playing-game-page" class="main-page">
+        <div id="currently-playing-cartridge-container"></div>
+        <div id="playing-info">
+            <svg class="right-lineart" viewBox="0 1 5 10" preserveAspectRatio="none">
+                <path stroke-width=".4" fill="black" d="M0 0 0 12 12 12 12 0" />
+            </svg>
+            <span id="current-playtime"></span>
+        </div>
     </div>
 </body>
 <style>

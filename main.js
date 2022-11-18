@@ -45,11 +45,8 @@ function api_launchGame(req, res) {
 
 function api_killGame(req, res) {
     apiLogger.log('killing game');
-    if(forciblyKillGame()) {
-        res.status(200).send('Game killed');
-    } else {
-        res.status(500).send('No game running');
-    }
+    let killed = forciblyKillGame();
+    res.status(200).send({ killed });
 }
 
 function createServer() {

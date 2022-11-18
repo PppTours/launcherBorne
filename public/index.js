@@ -123,27 +123,52 @@ const Sounds = {
     "menu_transition": loadAudio("nessfx/03_start4.wav", { volume: .4 }),
     "game_start":      loadAudio("nessfx/04_start5.wav", { volume: .4 }),
     "carousel_move":   loadAudio("nessfx/31_text.wav" /*"nessfx/48_skip.wav"*/, { bufferCount: 5, volume: .5 }),
-    "main_music":      loadAudio("stereotypical-90s-space-shooter-music/boss.ogg", { volume: .6 }),
+    "main_music":      loadAudio("stereotypical-90s-space-shooter-music/boss.ogg"),
+
+    _mainMusicMasterVolume: .6,
+    _mainMusicPermanentDamping: 0,
+    _mainMusicTemporaryDamping: 0,
+
+    _mainMusicDampingDelay: .1*1000, // ms between two updates
+    _mainMusicDampingSpeed: .1,
+    _mainMusicDampingInterval: null,
 
     playOnTopOfMainMusic(sound) {
-        let mainMusic = this.main_music;
-        let dampSpeed = .1;
-        let decCount = 1/dampSpeed, incCount = decCount;
-        let dampDelay = .5 /*.5s*/ * 1000/decCount;
-        let masterVolume = mainMusic.volume;
-        let decInterval = setInterval(() => {
-            mainMusic.volume -= dampSpeed * masterVolume;
-            if(--decCount <= 0)
-                clearInterval(decInterval);
-        }, dampDelay);
         sound.play();
+        this._mainMusicTemporaryDamping++;
+        this._updateMainMusicVolume();
         sound.addEventListener('ended', () => {
-            let incInterval = setInterval(() => {
-                mainMusic.volume += dampSpeed * masterVolume;
-                if(--incCount <= 0)
-                    clearInterval(incInterval);
-            }, dampDelay);
+            this._mainMusicTemporaryDamping--;
+            this._updateMainMusicVolume();
         }, { once: true });
+    },
+
+    fadeMainMusicVolume(volume) {
+        this._mainMusicPermanentDamping = 1-volume;
+        this._updateMainMusicVolume();
+    },
+
+    _updateMainMusicVolume() {
+        if(this._mainMusicDampingInterval != null)
+            return;
+        this._mainMusicDampingInterval = setInterval(() => {
+            let mainMusic = this.main_music;
+            let masterVolume = this._mainMusicMasterVolume;
+            let targetVolume = masterVolume * Math.max(0, 1 - (this._mainMusicPermanentDamping + this._mainMusicTemporaryDamping));
+            let currentVolume = mainMusic.volume;
+            let newVolume = currentVolume + Math.sign(targetVolume - currentVolume) * this._mainMusicDampingSpeed;
+            // if the target volume is reached, stop the interval
+            if(targetVolume == currentVolume) {
+                clearInterval(this._mainMusicDampingInterval);
+                this._mainMusicDampingInterval = null;
+                return;
+            }
+            // prevent overshooting
+            if(targetVolume < currentVolume) newVolume = Math.max(newVolume, targetVolume);
+            if(targetVolume > currentVolume) newVolume = Math.min(newVolume, targetVolume);
+
+            mainMusic.volume = newVolume;
+        }, this._mainMusicDampingDelay);
     }
 };
 

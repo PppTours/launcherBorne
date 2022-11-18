@@ -24,6 +24,18 @@ const localLink = {
         case 'game-exit':
             let { code } = data.response;
             console.log('game exited with code ' + code);
+            if(pages.activePage != pages.playingGame) {
+                console.error('game exited but not playing a game');
+                return;
+            }
+            // transition to games page, with a small delay to allow players to see the transition
+            Sounds.fadeMainMusicVolume(1);
+            setTimeout(() => {
+                pages.activePage = pages.games;
+                pages.games.classList.add('active');
+                pages.playingGame.classList.remove('active');
+                idlingMenuTransition.resume();
+            }, 2000);
             break;
         default:
             console.error('unhandled message: ' + data);

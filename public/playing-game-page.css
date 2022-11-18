@@ -1,0 +1,85 @@
+#playing-game-page {
+    --right-side-size: 40vw;
+}
+
+#playing-info {
+    position: absolute;
+    width: var(--right-side-size);
+    height: 100%;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+}
+
+#playing-game-page .right-lineart {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    stroke: var(--c-main-1);
+    z-index: -1;
+}
+
+#current-playtime {
+    font-size: 30px;
+    font-weight: bold;
+    padding-left: 30%;
+    padding-right: 30%;
+}
+
+#currently-playing-cartridge-container {
+    width: calc(100vw - var(--right-side-size));
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#currently-playing-cartridge-container > * {
+    position: relative;
+}
+
+#currently-playing-cartridge-container > *::before,
+#currently-playing-cartridge-container > *::after {
+    content: '';
+    background-color: rgba(56, 50, 127, 0.426);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    animation: cartridge-accent-anim .5s ease-in-out infinite alternate;
+}
+
+#currently-playing-cartridge-container > *::after {
+    animation-delay: .25s;
+}
+
+@keyframes cartridge-accent-anim {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+
+
+
+/* Pop-in animations */
+#playing-game-page #playing-info {
+    transform: translateX(100%);
+    transition: transform ease .5s;
+}
+#playing-game-page.active #playing-info {
+    transform: none;
+}
+
+#playing-game-page #currently-playing-cartridge-container {
+    transform: translateX(-100%);
+    transition: transform ease .5s;
+}
+#playing-game-page.active #currently-playing-cartridge-container {
+    transform: none;
+}
