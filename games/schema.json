@@ -1,0 +1,97 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "ppp.game.schema",
+    "description": "A game info",
+    
+    "$comment": "------- This file describes the format of games description files, see /notes.md to see how to use it -------",
+    
+    "type": "object",
+    "properties": {
+
+        "name": {
+            "description": "The game's name",
+            "type": "string"
+        },
+
+        "launch_command": {
+            "description": "The executable file's name in the /game folder, or alternatively the command to launch the game (ie python...), use with launch_args",
+            "type": "string"
+        },
+
+        "launch_args": {
+            "description": "The arguments to pass to the launch command, use with launch_command",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+
+        "description": {
+            "description": "A short description of the game",
+            "type": "string"
+        },
+
+        "music_file": {
+            "description": "The path to a music file in the /game folder that will play in the launcher",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "null" }
+            ]
+        },
+
+        "vignette": {
+            "description": "A vignette file in the /game folder that will be displayed in the launcher",
+            "type": "string"
+        },
+
+        "creation_date": {
+            "description": "The game's creation date",
+            "type": "string"
+        },
+
+        "creators": {
+            "description": "The list of game developpers",
+            "type": "array",
+            "items": {
+                "description": "The creator's full name",
+                "type": "string"
+            }
+        },
+
+        "tags": {
+            "description": "A set of game tags",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "platformer",
+                    "solo",
+                    "co-op",
+                    "versus",
+                    "shoot them up",
+                    "rpg",
+                    "gestion",
+                    "simulation",
+                    "rythm",
+                    "strategy",
+                    "puzzle",
+                    "beat them up",
+                    "fighting game"
+                ]
+            },
+            "uniqueItems": true
+        }
+    },
+
+    "required": [
+        "name",
+        "launch_file",
+        "launch_args",
+        "music_file",
+        "vignette",
+        "creation_date",
+        "description",
+        "creators",
+        "tags"
+    ]
+}
