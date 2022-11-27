@@ -2,3 +2,5 @@ package-lock.json
 node_modules/
 games/*
 !games/schema.json
+wintool/wintool.exe
+wintool/keys.txt

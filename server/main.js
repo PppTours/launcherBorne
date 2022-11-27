@@ -2,12 +2,15 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { runGame, forciblyKillGame, gameEvents } = require('./games-manager.js');
+const { exec } = require('child_process');
 const { Logger } = require('./loggers.js');
 const WebSocket = require('ws');
+const wintool = require('./wintool.js');
 
 const GAMES_DIR = path.join(__dirname, 'games');
 
-const port = 12345;
+const port = process.env.PORT || 12345;
+const isDebugEnv = process.env.DEBUG_ENV === 'true';
 
 const apiLogger = new Logger('api');
 
@@ -105,5 +108,28 @@ function createServer() {
     });
 }
 
+function openBrowser() {
+    // 'start' is win32 only
+    exec('start http://localhost:' + port);
+}
 
-createServer();
+function main() {
+    let command = (process.argv.length > 2 && process.argv[2]) || 'server';
+
+    switch(command) {
+    case 'server':
+        createServer();
+        wintool.substitution();
+        if(!isDebugEnv)
+            openBrowser();
+        break;
+    case 'key_logger':
+        wintool.key_logger();
+        break;
+    default:
+        console.error('Unknown command "' + command + '", use one of "server", "key_logger"');
+        break;
+    }
+}
+
+main();
