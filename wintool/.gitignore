@@ -1,3 +1,5 @@
 .vs/
+wintool.vcxproj
 wintool.vcxproj.user
+wintool.vcxproj.filters
 x64/

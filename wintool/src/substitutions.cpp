@@ -80,12 +80,14 @@ static void loadKeySubstitutions()
   if (!file.good())
     throw std::exception("Missing keys.txt file!");
   int replaced, replacement;
+  std::cout << "replacements: ";
   while (file.good()) {
     file >> replaced >> replacement;
     s_substitutions.replaced.push_back(replaced);
     s_substitutions.replacements.push_back(replacement);
-    std::cout << "replacement: " << replaced << " " << replacement << std::endl;
+    std::cout << replaced << "|" << replacement << " ";
   }
+  std::cout << std::endl;
 }
 
 void start()

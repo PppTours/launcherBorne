@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace substitutions {
 
 void start();
@@ -12,9 +14,9 @@ void start();
 
 }
 
-namespace simple_click {
+namespace send_stroke {
 
-void start();
+void start(const std::string &arg);
 
 }
 
@@ -22,6 +24,6 @@ namespace entry_points {
 
 inline void substitutions() { substitutions::start(); }
 inline void key_logger() { key_logger::start(); }
-inline void simple_click() { simple_click::start(); }
+inline void send_stroke(const std::string &arg) { send_stroke::start(arg); }
 
 }
