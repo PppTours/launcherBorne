@@ -119,15 +119,13 @@ function main() {
     switch(command) {
     case 'server':
         createServer();
-        wintool.substitution();
-        if(!isDebugEnv)
+        if(!isDebugEnv) {
             openBrowser();
-        break;
-    case 'key_logger':
-        wintool.key_logger();
+            setTimeout(() => wintool.focus_launcher(), 2000);
+        }
         break;
     default:
-        console.error('Unknown command "' + command + '", use one of "server", "key_logger"');
+        console.error('Unknown command "' + command + '", use one of ["server"]');
         break;
     }
 }

@@ -24,20 +24,14 @@ function runWinTool(command, logDetails=false) {
     });
 }
 
-function key_logger() {
-    runWinTool('key_logger');
+function focus_launcher() {
+    runWinTool('focus_launcher');
 }
-
-function simple_click() {
-    runWinTool('simple_click');
-}
-
-function substitution() {
-    runWinTool('substitution', true);
+function focus_game() {
+    runWinTool('focus_game');
 }
 
 module.exports = {
-    key_logger,
-    simple_click,
-    substitution,
+    focus_launcher,
+    focus_game,
 };

@@ -42,7 +42,6 @@ function runInstance(command, args, executionPath) {
         // click in the middle of the screen to make sure the game has focus
         // this is a shady workaround, but it works as long as the game starts
         // before the timeout
-        // TODO hide the cursor once the game exited
         setTimeout(() => {
             wintool.simple_click();
         }, 1000);

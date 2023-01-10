@@ -163,58 +163,64 @@ window.addEventListener('load', async () => {
 });
 
 // handle game selection and launch
-window.addEventListener('keydown', async (ev) => {
-    if(document.querySelector('.main-page.fading') != null) return;
 
-    if(pages.activePage == pages.front) {
-        Sounds.playOnTopOfMainMusic(Sounds.menu_transition);
-        pages.front.classList.add('fading');
-        pages.front.addEventListener('transitionend', (ev) => {
-            pages.front.classList.remove('active', 'fading');
-            pages.games.classList.add('active');
-            idlingMenuTransition.resume();
-        });
-        pages.activePage = pages.games;
-        
-    } else if(pages.activePage == pages.playingGame) {
-        // no user interaction
+// Wait for a 2s timeout before registering key pressed to prevent the
+// f11 keypress that makes the launcher go fullscreen to be interpreted
+// as a real keypress
+setTimeout(() => {
+    window.addEventListener('keydown', async (ev) => {
+        if(document.querySelector('.main-page.fading') != null) return;
 
-    } else if(pages.activePage == pages.games) {
-        idlingMenuTransition.delay();
+        if(pages.activePage == pages.front) {
+            Sounds.playOnTopOfMainMusic(Sounds.menu_transition);
+            pages.front.classList.add('fading');
+            pages.front.addEventListener('transitionend', (ev) => {
+                pages.front.classList.remove('active', 'fading');
+                pages.games.classList.add('active');
+                idlingMenuTransition.resume();
+            });
+            pages.activePage = pages.games;
+            
+        } else if(pages.activePage == pages.playingGame) {
+            // no user interaction
 
-        switch(ev.key) {
-        case 'ArrowRight':
-            gamesCarousel.scrollToNext();
-            selectedGameIdx++;
-            selectedGameIdx %= games.length;
-            activeGameTitle.innerHTML = games[selectedGameIdx].info.name;
-            Sounds.carousel_move.play();
-            break;
-        case 'ArrowLeft':
-            gamesCarousel.scrollToPrevious();
-            selectedGameIdx--;
-            if(selectedGameIdx < 0) selectedGameIdx += games.length;
-            activeGameTitle.innerHTML = games[selectedGameIdx].info.name;
-            Sounds.carousel_move.play();
-            break;
-        case 'Enter':
-            try {
-                await launchGame(games[selectedGameIdx]);
-                Sounds.game_start.play();
-                pages.activePage = pages.playingGame;
-                pages.games.classList.remove('active');
-                pages.playingGame.classList.add('active');
-                playingGamePage.resetPlaytime();
-                idlingMenuTransition.pause();
-                Sounds.fadeMainMusicVolume(0);
-                currentPlayingGameContainer.innerHTML = "";
-                currentPlayingGameContainer.appendChild(createGameCartridge(games[selectedGameIdx].info));
-            } catch (e) {
-                console.error(e);
-                promptInfo(e);
+        } else if(pages.activePage == pages.games) {
+            idlingMenuTransition.delay();
+
+            switch(ev.key) {
+            case 'ArrowRight':
+                gamesCarousel.scrollToNext();
+                selectedGameIdx++;
+                selectedGameIdx %= games.length;
+                activeGameTitle.innerHTML = games[selectedGameIdx].info.name;
+                Sounds.carousel_move.play();
+                break;
+            case 'ArrowLeft':
+                gamesCarousel.scrollToPrevious();
+                selectedGameIdx--;
+                if(selectedGameIdx < 0) selectedGameIdx += games.length;
+                activeGameTitle.innerHTML = games[selectedGameIdx].info.name;
+                Sounds.carousel_move.play();
+                break;
+            case 'Enter':
+                try {
+                    await launchGame(games[selectedGameIdx]);
+                    Sounds.game_start.play();
+                    pages.activePage = pages.playingGame;
+                    pages.games.classList.remove('active');
+                    pages.playingGame.classList.add('active');
+                    playingGamePage.resetPlaytime();
+                    idlingMenuTransition.pause();
+                    Sounds.fadeMainMusicVolume(0);
+                    currentPlayingGameContainer.innerHTML = "";
+                    currentPlayingGameContainer.appendChild(createGameCartridge(games[selectedGameIdx].info));
+                } catch (e) {
+                    console.error(e);
+                    promptInfo(e);
+                }
+                break;
             }
-            break;
         }
-    }
-});
+    });
+}, 2000);
 
