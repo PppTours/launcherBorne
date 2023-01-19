@@ -8,7 +8,7 @@ public class TFont {
 	
 	private static final VertexArray VAO;
 	private static final VertexBuffer VBO;
-	private static final ShaderProgram SHADER;
+	public static final ShaderProgram SHADER;
 	
 	private final Texture texture;
 	private final Glyph[] glyphs;
@@ -28,7 +28,25 @@ public class TFont {
 		this.glyphs = glyphs;
 	}
 	
-	public void renderText(String text, float x, float y, float size, Color color) {
+	public float getLineLength(String lines, float size) {
+		float maxLength = 0;
+		for(String line : lines.split("\n")) {
+			float lineLength = 0;
+			for (int i = 0; i < line.length(); i++) {
+		        char ch = line.charAt(i);
+		        if(ch < firtChar || ch > lastChar)
+		        	continue;
+		        Glyph g = glyphs[ch-firtChar];
+		        if(g == null)
+		        	continue;
+		        lineLength += (float)g.texWidth/g.texHeight*(ch==' ' ? size/2.f : size);
+			}
+			maxLength = Math.max(maxLength, lineLength);
+		}
+		return maxLength;
+	}
+	
+	public void renderText(String text, float x, float y, float size) {
 		float posXa = x;
 		float posYa = y;
 	
@@ -40,7 +58,7 @@ public class TFont {
 	        char ch = text.charAt(i);
 	        if (ch == '\n') {
 	            /* Line feed, set x and y to draw at the next line */
-	        	posYa -= size*2;
+	        	posYa -= size*1.1f;
 	        	posXa = x;
 	            continue;
 	        }

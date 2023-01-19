@@ -28,12 +28,14 @@ public class GamesManager implements AutoCloseable {
 					} finally {
 						if(process != null && process.isAlive()) {
 							logger.log("$rRedirection interrupted, stopping game forcibly");
-							process.destroy();
+							killGame();
 						}
+						logger.log("Game exited");
 					}
 				}
 			}
 		};
+		redirectionThread.setName("redirection");
 		redirectionThread.start();
 	}
 	
@@ -43,8 +45,8 @@ public class GamesManager implements AutoCloseable {
 		if(stopped)
 			throw new IllegalStateException("The manager was stopped");
 		try {
-			logger.log("Running $g%s", String.join(" ", game.launchArgs));
-			process = Runtime.getRuntime().exec(game.launchArgs, null, game.gameDirectory);
+			logger.log("Running $g%s", String.join(" ", game.runCommand));
+			process = Runtime.getRuntime().exec(game.runCommand, null, game.gameDirectory);
 			processSync.release();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -59,6 +61,14 @@ public class GamesManager implements AutoCloseable {
 	
 	public boolean isGameRunning() {
 		return process != null;
+	}
+
+	public synchronized void killGame() {
+		if(process == null)
+			return;
+		logger.log("Killing game");
+		process.destroy();
+		process = null;
 	}
 	
 }

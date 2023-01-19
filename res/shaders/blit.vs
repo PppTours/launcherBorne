@@ -1,14 +1,19 @@
 #version 330 core
 
-in vec2 i_position;
-
-out vec2 v_uv;
+const vec2[4] vertices = vec2[4](
+    vec2(0, 0),
+    vec2(0, 1),
+    vec2(1, 1),
+    vec2(1, 0)
+);
 
 uniform vec4 u_transform;
 
-void main() {
-	vec2 world = i_position*u_transform.zw + u_transform.xy;
-	vec4 screen = vec4(world, 0, 1);
-	gl_Position = screen;
-	v_uv = i_position;
+out vec2 v_uv;
+
+void main()
+{
+    vec2 vertex = vertices[gl_VertexID];
+	v_uv = vertex*u_transform.zw + u_transform.xy;
+    gl_Position = vec4(vertex*2-1, 0, 1);
 }

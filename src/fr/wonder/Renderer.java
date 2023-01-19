@@ -1,9 +1,14 @@
-package fr.wonder.display;
+package fr.wonder;
+
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import fr.wonder.gl.FrameBuffer;
 import fr.wonder.gl.GLUtils;
 import fr.wonder.gl.Shader;
 import fr.wonder.gl.ShaderProgram;
+import fr.wonder.gl.TFont;
+import fr.wonder.gl.TextRenderer;
 import fr.wonder.gl.Texture;
 import fr.wonder.gl.VertexArray;
 import fr.wonder.gl.VertexBuffer;
@@ -18,11 +23,16 @@ public class Renderer {
 
 	public static final Texture CARTRIDGE_BG = Texture.loadTexture("/textures/cartridge_background.png");
 	public static final Texture CARTRIDGE_FG = Texture.loadTexture("/textures/cartridge_foreground.png");
+	public static final Texture WIP_TEXTURE = Texture.loadTexture("/textures/wip.png");
+	public static final Texture INFO_BACKGROUND_TEXTURE = Texture.fromBuffer(1, 1, ByteBuffer.allocateDirect(4).putInt(0x99999999).position(0)); 
 
 	public static final ShaderProgram TEXTURE_SHADER = makeShader("texture.vs", "texture.fs");
 	public static final ShaderProgram BLIT_SHADER = makeShader("blit.vs", "blit.fs");
-	public static final ShaderProgram GAMES_LIST_BG_SHADER = makeShader("texture.vs", "bg_gameslist.fs");
+	public static final ShaderProgram BACKGROUND_SHADER = makeShader("texture.vs", "background.fs");
 	public static final ShaderProgram CARTRIDGE_SHADER = makeShader("texture.vs", "cartridge.fs");
+
+	public static final TFont FONT_PLAIN = TextRenderer.loadFont("/fonts/arcadepi.ttf", true);
+	public static final TFont FONT_TITLE = TextRenderer.loadFont("/fonts/ka1.ttf", true);
 	
 	private static final FrameBuffer mainFBO = new FrameBuffer(WIN_WIDTH, WIN_HEIGHT, true);
 	
@@ -33,12 +43,14 @@ public class Renderer {
 				0,             0,              1,         0,
 				0,             0,              0,         1,
 		};
-		TEXTURE_SHADER.bind();
-		TEXTURE_SHADER.setUniformMat4f("u_camera", cameraMatrix);
-		GAMES_LIST_BG_SHADER.bind();
-		GAMES_LIST_BG_SHADER.setUniformMat4f("u_camera", cameraMatrix);
-		CARTRIDGE_SHADER.bind();
-		CARTRIDGE_SHADER.setUniformMat4f("u_camera", cameraMatrix);
+		for(ShaderProgram shader : Arrays.asList(TEXTURE_SHADER, BACKGROUND_SHADER, CARTRIDGE_SHADER, TFont.SHADER)) {
+			shader.bind();
+			shader.setUniformMat4f("u_camera", cameraMatrix);
+		}
+		for(ShaderProgram shader : Arrays.asList(BACKGROUND_SHADER)) {
+			shader.bind();
+			shader.setUniform2f("u_resolution", WIN_WIDTH, WIN_HEIGHT);
+		}
 	}
 	
 	static {
@@ -61,13 +73,24 @@ public class Renderer {
 		currentShader.bind();
 		return shader;
 	}
-	
+
 	public static void renderQuad(float x, float y, float width, float height, Texture texture) {
+		texture.bind(0);
+		renderQuad(x, y, width, height);
+	}
+	
+	public static void renderQuad(float x, float y, float width, float height) {
 		QUAD_VAO.bind();
 		currentShader.setUniform4f("u_transform", x, y, width, height);
-		if(texture != null)
-			texture.bind(0);
 		GLUtils.dcQuads(1);
+	}
+
+	public static void renderText(float x, float y, float size, TFont font, String text) {
+		font.renderText(text, x, y, size);
+	}
+	
+	public static void renderTextCentered(float x, float y, float size, TFont font, String text) {
+		font.renderText(text, x - font.getLineLength(text, size)*.5f, y - size/2.f, size);
 	}
 	
 	public static void prepareFrame() {
@@ -75,7 +98,7 @@ public class Renderer {
 		GLUtils.clear();
 	}
 	
-	public static void sendFrame() {
+	public static void endFrame() {
 		FrameBuffer.unbind();
 		GLUtils.clear();
 		mainFBO.bindTexture(0);
@@ -86,22 +109,25 @@ public class Renderer {
 	}
 	
 	public static void updateWinSize(int displayWidth, int displayHeight) {
-		// letterbox stretching
+//		// -- letterbox stretching --
+//		// width and height ratios
+//		float rw = (float)displayWidth/mainFBO.getWidth();
+//		float rh = (float)displayHeight/mainFBO.getHeight();
+//		float mr = Math.min(rw, rh);
+//		// do not try to find how I found these expressions
+//		blitW = rw/mr;
+//		blitH = rh/mr;
+//		blitX = (1-blitW)/2.f;
+//		blitY = (1-blitH)/2.f;
 		
-		// width and height ratios
-		float rw = (float)displayWidth/mainFBO.getWidth();
-		float rh = (float)displayHeight/mainFBO.getHeight();
-		float mr = Math.min(rw, rh);
-		// do not try to find how I found these expressions
-		blitW = rw/mr;
-		blitH = rh/mr;
-		blitX = (1-blitW)/2.f;
-		blitY = (1-blitH)/2.f;
-
-		blitX -= 1;
-		blitY -= 1;
-		blitW *= 2;
-		blitH *= 2;
+		// on the real hardware the aspect ratio is close enough to 16:9
+		// for the letterbox stretching to not be that fancy, to avoid
+		// the black stripes it is easier to stretch the whole display to
+		// fit the viewport (=window size)
+		blitX = 0;
+		blitY = 0;
+		blitW = 1;
+		blitH = 1;
 	}
 
 }

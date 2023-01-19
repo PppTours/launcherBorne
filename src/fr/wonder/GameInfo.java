@@ -6,22 +6,21 @@ import fr.wonder.gl.Texture;
 
 public class GameInfo {
 	
-	public String name;
+	public String title;
 	public String creationDate;
 	public String description;
-	public String[] creators;
-	public String launchFile;
-	public String[] launchArgs;
-	public String musicFile;
+	public String[] authors;
+	public String[] runCommand;
 	public String vignette;
+	public String cartridgeImage;
 	public GameTag[] tags;
 	
 	// generated
-	
+
 	public Texture vignetteTexture;
+	public Texture cartridgeTexture;
 	public File gameDirectory;
 	public File metaDirectory;
-	// TODO music
 	
 	public static enum GameTag {
 		
@@ -35,7 +34,12 @@ public class GameInfo {
 		GESTION,
 		STRATEGY,
 		PUZZLE,
-		FIGHTING_GAME,
+		FIGHTING_GAME;
+		
+		@Override
+		public String toString() {
+			return name().toLowerCase().replaceAll("_", " ");
+		}
 		
 	}
 	

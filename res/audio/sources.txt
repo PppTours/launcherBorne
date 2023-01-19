@@ -1,0 +1,6 @@
+nessfx - https://opengameart.org/content/nes-8-bit-sound-effects
+transiton.wav
+game_start.wav
+selection.wav
+stereotypical-90s-space-shooter-music - https://opengameart.org/content/stereotypical-90s-space-shooter-music
+music.ogg

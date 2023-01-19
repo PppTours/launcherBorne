@@ -34,8 +34,8 @@ public class GLWindow {
 		if (!glfwInit())
 			throw new IllegalStateException("Unable to initialize GLFW !");
 
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_SAMPLES, 4);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -47,8 +47,6 @@ public class GLWindow {
 			throw new IllegalStateException("Unable to create a window !");
 
 		glfwMakeContextCurrent(window);
-		glfwShowWindow(window);
-		glfwFocusWindow(window);
 		glfwSwapInterval(1);
 
 		GL.createCapabilities();
@@ -71,12 +69,24 @@ public class GLWindow {
 		});
 		
 		glfwSetKeyCallback(window, (win, key, scanCode, action, mods) -> {
-			if(action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
-				glfwSetWindowShouldClose(window, true);
-			}
+//			if(action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+//				glfwSetWindowShouldClose(window, true);
+//			}
 			if(action != GLFW_RELEASE)
 				keyCallback.accept(key);
 		});
+	}
+	
+	public static void show(boolean fullScreen) {
+		glfwShowWindow(window);
+		glfwFocusWindow(window);
+		if(fullScreen) {
+			long monitor = glfwGetPrimaryMonitor();
+			int[] width = new int[1], height = new int[1];
+			int[] xpos = new int[1], ypos = new int[1];
+			glfwGetMonitorWorkarea(monitor, xpos, ypos, width, height);
+			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, width[0], height[0], GLFW_DONT_CARE);
+		}
 	}
 	
 	public static void setResizeCallback(BiConsumer<Integer, Integer> resizeCallback) {

@@ -48,12 +48,15 @@ public class GameInfoParser {
 		// if the first launch argument is an exe file or any file in the /game directory
 		// append the directory relative path to it, java expects paths relative to the
 		// current working directory when calling runtime#exec()
-		if(Arrays.asList(info.gameDirectory.list()).contains(info.launchArgs[0]))
-			info.launchArgs[0] = new File(info.gameDirectory, info.launchArgs[0]).getPath();
+		if(Arrays.asList(info.gameDirectory.list()).contains(info.runCommand[0]))
+			info.runCommand[0] = new File(info.gameDirectory, info.runCommand[0]).getPath();
+		Arrays.parallelSort(info.tags, (t1,t2) -> t1.name().compareTo(t2.name()));
 
 		// load the vignette
 		if(info.vignette != null)
 			info.vignetteTexture = Texture.loadTexture(new File(info.metaDirectory, info.vignette));
+		if(info.cartridgeImage != null)
+			info.cartridgeTexture = Texture.loadTexture(new File(info.metaDirectory, info.cartridgeImage));
 	}
 	
 	private static Gson buildGson() {

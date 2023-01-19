@@ -59,6 +59,7 @@ public class FrameBuffer {
 	
 	public static void unbind() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, GLWindow.getWinWidth(), GLWindow.getWinHeight());
 	}
 	
 	public void dispose() {

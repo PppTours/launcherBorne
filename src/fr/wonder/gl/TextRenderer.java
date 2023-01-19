@@ -16,13 +16,7 @@ import fr.wonder.gl.TFont.Glyph;
 
 public class TextRenderer {
 	
-	public static final TFont font;
-	
-	static {
-		font = loadFont("/fonts/ka1.ttf", true);
-	}
-	
-	private static TFont loadFont(String resourcePath, boolean antiAlias) {
+	public static TFont loadFont(String resourcePath, boolean antiAlias) {
 		try {
 			Font font = Font.createFont(Font.TRUETYPE_FONT, TextRenderer.class.getResourceAsStream(resourcePath));
 //			font = new Font("SERIF", Font.PLAIN, 128);
