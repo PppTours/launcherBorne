@@ -65,7 +65,7 @@ public class Launcher {
 			
 			menu.start();
 			
-			GLWindow.show(false);
+			GLWindow.show(true);
 			Wintool.focusActiveWindow();
 			
 			while(!GLWindow.shouldDispose()) {
@@ -197,7 +197,7 @@ public class Launcher {
 		private float currentX = -WIN_WIDTH*.55f;
 		
 		public GamesList() {
-			currentSelection = Math.min(2, games.size());
+			currentSelection = Math.min(2, games.size()-1);
 			selectedGame = games.get(currentSelection);
 		}
 
