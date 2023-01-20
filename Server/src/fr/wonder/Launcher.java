@@ -1,19 +1,20 @@
 package fr.wonder;
 
-import static fr.wonder.Renderer.*;
 import static fr.wonder.Audio.*;
+import static fr.wonder.Renderer.*;
 
 import java.io.File;
 import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 
-import fr.wonder.GameInfo.GameTag;
 import fr.wonder.Launcher.MenuController.MenuState;
 import fr.wonder.audio.AudioManager;
 import fr.wonder.gl.GLWindow;
 
 public class Launcher {
+	
+	/* Note to the maintainer: don't */
 	
 	public static final File GAMES_DIR = new File("games");
 	
@@ -27,20 +28,22 @@ public class Launcher {
 	private static GameDetails gameDetails;
 	private static Background background;
 	private static PlayingPanel playingPanel;
+	private static PppLogo logo;
 	
 	public static void main(String[] args) {
 		GLWindow.createWindow(1600, 900);
 		AudioManager.createSoundSystem();
 		
 		games = GameInfoParser.parseGameInfos();
-		GameInfo dummy = new GameInfo();
-		dummy.title = "Dummy";
-		dummy.description = "A template description spanning\nmultiple lines";
-		dummy.creationDate = "today";
-		dummy.authors = new String[] { "albin calais", "charles caillon" };
-		dummy.tags = new GameTag[] { GameTag.VERSUS, GameTag.COOP, GameTag.PLATFORMER };
-		for(int i = 0; i < 10; i++)
-			games.add(dummy);
+		
+//		GameInfo dummy = new GameInfo();
+//		dummy.title = "Dummy";
+//		dummy.description = "A template description spanning\nmultiple lines";
+//		dummy.creationDate = "today";
+//		dummy.authors = new String[] { "albin calais", "charles caillon" };
+//		dummy.tags = new GameTag[] { GameTag.VERSUS, GameTag.COOP, GameTag.PLATFORMER };
+//		for(int i = 0; i < 10; i++)
+//			games.add(dummy);
 		
 		try (GamesManager gamesManager = new GamesManager()) {
 			long firstMillis = System.currentTimeMillis();
@@ -50,6 +53,7 @@ public class Launcher {
 			gameDetails = new GameDetails();
 			background = new Background();
 			playingPanel = new PlayingPanel();
+			logo = new PppLogo();
 			Launcher.gamesManager = gamesManager;
 			
 			Renderer.updateWinSize(GLWindow.getWinWidth(), GLWindow.getWinHeight());
@@ -66,7 +70,7 @@ public class Launcher {
 			
 			while(!GLWindow.shouldDispose()) {
 				float time = (System.currentTimeMillis()-firstMillis)/1000.f;
-				menu.update();
+				menu.update(time);
 				
 				prepareFrame();
 				background.render(time);
@@ -74,6 +78,7 @@ public class Launcher {
 				gameDetails.render(time);
 				playingPanel.render(time);
 				endFrame();
+				logo.render(time); // must be after #endFrame(), 3D rendering uses the screen fbo
 				GLWindow.sendFrame();
 			}
 		}
@@ -94,10 +99,25 @@ public class Launcher {
 		
 	}
 	
+	static class PppLogo {
+	
+		private float currentY = 0;
+		
+		public void render(float time) {
+			currentY = lerpThroughTime(currentY, menu.state == MenuState.IDLE ? 0 : -10.5f);
+			if(currentY > -10.f)
+				Renderer.renderLogo(time, currentY);
+		}
+		
+	}
+	
 	static class MenuController {
+		
+		private static final float ALLOWED_IDLE_TIME = 5.f;
 		
 		private MenuState state = MenuState.IDLE;
 		private int quitGameKeyCount = 3;
+		private float idleTime = 0;
 		
 		public void start() {
 			MUSIC_SOURCE
@@ -107,6 +127,7 @@ public class Launcher {
 		}
 		
 		public void processKey(float time, int key) {
+			idleTime = time;
 			switch(state) {
 			case IDLE:
 				state = MenuState.MAIN_MENU;
@@ -136,15 +157,20 @@ public class Launcher {
 			}
 		}
 		
-		public void update() {
+		public void update(float time) {
 			switch (state) {
 			case IDLE: break;
-			case MAIN_MENU: break;
+			case MAIN_MENU:
+				if(time - idleTime > ALLOWED_IDLE_TIME)
+					state = MenuState.IDLE;
+				break;
 			case PLAYING:
 				if(!gamesManager.isGameRunning()) {
 					state = MenuState.MAIN_MENU;
+					idleTime = time;
 					MUSIC_SOURCE.resume();
 				}
+				break;
 			}
 		}
 		
@@ -308,5 +334,3 @@ public class Launcher {
 	}
 
 }
-
-

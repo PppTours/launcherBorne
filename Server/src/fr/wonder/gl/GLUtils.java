@@ -80,6 +80,13 @@ public class GLUtils {
 		else
 			glDisable(GL_BLEND);
 	}
+
+	public static void enableDepth(boolean enabled) {
+		if(enabled)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
 	
 	public static void clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
