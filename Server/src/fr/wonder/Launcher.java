@@ -113,7 +113,7 @@ public class Launcher {
 	
 	static class MenuController {
 		
-		private static final float ALLOWED_IDLE_TIME = 5.f;
+		private static final float ALLOWED_IDLE_TIME = 10.f;
 		
 		private MenuState state = MenuState.IDLE;
 		private int quitGameKeyCount = 3;
@@ -134,11 +134,12 @@ public class Launcher {
 				SFX_SOURCES.play(SFX_TRANSITION);
 				break;
 			case MAIN_MENU:
-				if(key == GLFW.GLFW_KEY_ENTER) {
+				if(key == GLFW.GLFW_KEY_ESCAPE) {
 					gamesManager.runGame(selectedGame);
 					playingPanel.setGameStartTime(time);
 					MUSIC_SOURCE.pause();
-					Wintool.focusGameLater(2.f);
+					Wintool.focusGameLater(3.f);
+					Wintool.focusGameLater(10.f);
 					state = MenuState.PLAYING;
 				} else {
 					gamesList.processKey(key);
@@ -169,6 +170,7 @@ public class Launcher {
 					state = MenuState.MAIN_MENU;
 					idleTime = time;
 					MUSIC_SOURCE.resume();
+					GLWindow.show(true);
 				}
 				break;
 			}

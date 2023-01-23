@@ -30,6 +30,7 @@ public class GamesManager implements AutoCloseable {
 							logger.log("$rRedirection interrupted, stopping game forcibly");
 							killGame();
 						}
+						process = null;
 						logger.log("Game exited");
 					}
 				}
