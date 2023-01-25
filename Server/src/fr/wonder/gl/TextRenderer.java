@@ -21,7 +21,7 @@ public class TextRenderer {
 			Font font = Font.createFont(Font.TRUETYPE_FONT, TextRenderer.class.getResourceAsStream(resourcePath));
 //			font = new Font("SERIF", Font.PLAIN, 128);
 			// be sure to use a float here, an int refers to another method
-			font = font.deriveFont(128f);
+			font = font.deriveFont(32f);
 			
 			int imageWidth = 0;
 			int imageHeight = 0;

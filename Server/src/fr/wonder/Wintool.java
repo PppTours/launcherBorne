@@ -27,4 +27,15 @@ public class Wintool {
 		}.start();
 	}
 
+	public static void shutdowComputer() {
+		try {
+			Process p = Runtime.getRuntime().exec(new String[] { "shutdown", "/p", "/f" });
+			int status;
+			if((status = p.waitFor()) != 0)
+				logger.log("$rCould not shutdown computer, shutdown command exited with code %d", status);
+		} catch (IOException | InterruptedException e) {
+			logger.log("$rShutdown command error " + e);
+		}
+	}
+
 }

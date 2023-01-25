@@ -11,9 +11,12 @@ import java.util.function.Consumer;
 
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
+
+import fr.wonder.Launcher;
 
 public class GLWindow {
 	
@@ -40,10 +43,18 @@ public class GLWindow {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-		glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
 		glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 		
-		window = glfwCreateWindow(width, height, "Shader Display", NULL, NULL);
+		long monitor = glfwGetPrimaryMonitor();
+		GLFWVidMode videoMode = glfwGetVideoMode(monitor);
+		glfwWindowHint(GLFW_RED_BITS, videoMode.redBits());
+		glfwWindowHint(GLFW_GREEN_BITS, videoMode.greenBits());
+		glfwWindowHint(GLFW_BLUE_BITS, videoMode.blueBits());
+		glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate());
+		width = videoMode.width();
+		height = videoMode.height();
+		window = glfwCreateWindow(width, height, "Launcher", monitor, NULL);
 
 		if (window == NULL)
 			throw new IllegalStateException("Unable to create a window !");
@@ -53,9 +64,11 @@ public class GLWindow {
 
 		GL.createCapabilities();
 		
-		Callback errorCallback = GLUtil.setupDebugMessageCallback(System.err);
-		if(errorCallback != null)
-			closeableCallbacks.add(errorCallback);
+		if(Launcher.DEBUG_ENV) {
+			Callback errorCallback = GLUtil.setupDebugMessageCallback(System.err);
+			if(errorCallback != null)
+				closeableCallbacks.add(errorCallback);
+		}
 		
 		glViewport(0, 0, width, height);
 		glClearColor(0, 0, 0, 1);
@@ -71,9 +84,6 @@ public class GLWindow {
 		});
 		
 		glfwSetKeyCallback(window, (win, key, scanCode, action, mods) -> {
-//			if(action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
-//				glfwSetWindowShouldClose(window, true);
-//			}
 			if(action != GLFW_RELEASE)
 				keyCallback.accept(key);
 		});
@@ -82,13 +92,19 @@ public class GLWindow {
 	public static void show(boolean fullScreen) {
 		glfwShowWindow(window);
 		glfwFocusWindow(window);
-		if(fullScreen) {
-			long monitor = glfwGetPrimaryMonitor();
-			int[] width = new int[1], height = new int[1];
-			int[] xpos = new int[1], ypos = new int[1];
-			glfwGetMonitorWorkarea(monitor, xpos, ypos, width, height);
-			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, width[0], height[0], GLFW_DONT_CARE);
-		}
+		glfwMaximizeWindow(window);
+		glfwRestoreWindow(window);
+//		int[] w = new int[1], h = new int[1];
+//		glfwGetWindowSize(window, w, h);
+//		glViewport(0, 0, w[0], h[0]);
+//		System.out.println(w[0] + " " + h[0]);
+//		if(fullScreen) {
+//			long monitor = glfwGetPrimaryMonitor();
+//			int[] width = new int[1], height = new int[1];
+//			int[] xpos = new int[1], ypos = new int[1];
+//			glfwGetMonitorWorkarea(monitor, xpos, ypos, width, height);
+//			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, width[0], height[0], GLFW_DONT_CARE);
+//		}
 	}
 	
 	public static void setResizeCallback(BiConsumer<Integer, Integer> resizeCallback) {
@@ -140,6 +156,10 @@ public class GLWindow {
 	public static void sendFrame() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+	}
+
+	public static void hide() {
+		glfwHideWindow(window);
 	}
 	
 }

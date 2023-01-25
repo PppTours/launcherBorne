@@ -2,11 +2,10 @@ package fr.wonder;
 
 import static fr.wonder.Audio.*;
 import static fr.wonder.Renderer.*;
+import static fr.wonder.Keys.*;
 
 import java.io.File;
 import java.util.List;
-
-import org.lwjgl.glfw.GLFW;
 
 import fr.wonder.Launcher.MenuController.MenuState;
 import fr.wonder.audio.AudioManager;
@@ -17,6 +16,10 @@ public class Launcher {
 	/* Note to the maintainer: don't */
 	
 	public static final File GAMES_DIR = new File("games");
+	
+	public static final boolean DEBUG_ENV = System.getenv().containsKey("DEBUG_ENV");
+	
+	private static final boolean WINDOW_FULLSCREEN = !DEBUG_ENV;
 	
 	private static List<GameInfo> games;
 	private static GameInfo selectedGame;
@@ -65,7 +68,7 @@ public class Launcher {
 			
 			menu.start();
 			
-			GLWindow.show(true);
+			GLWindow.show(WINDOW_FULLSCREEN);
 			Wintool.focusActiveWindow();
 			
 			while(!GLWindow.shouldDispose()) {
@@ -134,7 +137,10 @@ public class Launcher {
 				SFX_SOURCES.play(SFX_TRANSITION);
 				break;
 			case MAIN_MENU:
-				if(key == GLFW.GLFW_KEY_ESCAPE) {
+				if(isKeyPressed(KEY_QUIT1) && isKeyPressed(KEY_QUIT2)) {
+					Wintool.shutdowComputer();
+					System.exit(0);
+				} else if(key == KEY_START) {
 					gamesManager.runGame(selectedGame);
 					playingPanel.setGameStartTime(time);
 					MUSIC_SOURCE.pause();
@@ -146,7 +152,7 @@ public class Launcher {
 				}
 				break;
 			case PLAYING:
-				if(key == GLFW.GLFW_KEY_ESCAPE) {
+				if(key == KEY_START) {
 					quitGameKeyCount--;
 					if(quitGameKeyCount == 0) {
 						gamesManager.killGame();
@@ -170,7 +176,8 @@ public class Launcher {
 					state = MenuState.MAIN_MENU;
 					idleTime = time;
 					MUSIC_SOURCE.resume();
-					GLWindow.show(true);
+					GLWindow.hide();
+					GLWindow.show(WINDOW_FULLSCREEN);
 				}
 				break;
 			}
@@ -207,14 +214,14 @@ public class Launcher {
 			int newSelection;
 			
 			switch(key) {
-			case GLFW.GLFW_KEY_LEFT:
-			case GLFW.GLFW_KEY_RIGHT:
+			case KEY_LEFT:
+			case KEY_RIGHT:
 				newSelection = currentSelection ^ 1;
 				break;
-			case GLFW.GLFW_KEY_UP:
+			case KEY_UP:
 				newSelection = currentSelection + 2;
 				break;
-			case GLFW.GLFW_KEY_DOWN:
+			case KEY_DOWN:
 				newSelection = currentSelection - 2;
 				break;
 			default:
