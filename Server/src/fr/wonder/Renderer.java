@@ -33,6 +33,7 @@ public class Renderer {
 	public static final Texture CARTRIDGE_BG = Texture.loadTexture("/textures/cartridge_background.png");
 	public static final Texture CARTRIDGE_FG = Texture.loadTexture("/textures/cartridge_foreground.png");
 	public static final Texture WIP_TEXTURE = Texture.loadTexture("/textures/wip.png");
+	public static final Texture TEXTURE_GLOBAL_CONTROLS = Texture.loadTexture("/textures/global_controls.png");
 	public static final Texture INFO_BACKGROUND_TEXTURE = Texture.fromBuffer(1, 1, ByteBuffer.allocateDirect(4).putInt(0x99999999).position(0)); 
 
 	public static final ShaderProgram TEXTURE_SHADER = makeShader("texture.vs", "texture.fs");
@@ -99,6 +100,7 @@ public class Renderer {
 	
 	public static void renderQuad(float x, float y, float width, float height) {
 		QUAD_VAO.bind();
+		currentShader.bind();
 		currentShader.setUniform4f("u_transform", x, y, width, height);
 		GLUtils.dcQuads(1);
 	}

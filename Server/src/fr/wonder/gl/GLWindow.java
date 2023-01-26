@@ -28,10 +28,7 @@ public class GLWindow {
 	private static BiConsumer<Integer, Integer> resizeCallback;
 	private static Consumer<Integer> keyCallback;
 
-	public static void createWindow(int width, int height) {
-		winWidth = width;
-		winHeight = height;
-
+	public static void createWindow() {
 		GLFWErrorCallback.createPrint(System.err).set();
 		
 		if (!glfwInit())
@@ -52,9 +49,10 @@ public class GLWindow {
 		glfwWindowHint(GLFW_GREEN_BITS, videoMode.greenBits());
 		glfwWindowHint(GLFW_BLUE_BITS, videoMode.blueBits());
 		glfwWindowHint(GLFW_REFRESH_RATE, videoMode.refreshRate());
-		width = videoMode.width();
-		height = videoMode.height();
-		window = glfwCreateWindow(width, height, "Launcher", monitor, NULL);
+		winWidth = videoMode.width();
+		winHeight = videoMode.height();
+		
+		window = glfwCreateWindow(winWidth, winHeight, "Launcher", monitor, NULL);
 
 		if (window == NULL)
 			throw new IllegalStateException("Unable to create a window !");
@@ -70,7 +68,7 @@ public class GLWindow {
 				closeableCallbacks.add(errorCallback);
 		}
 		
-		glViewport(0, 0, width, height);
+		glViewport(0, 0, winWidth, winHeight);
 		glClearColor(0, 0, 0, 1);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

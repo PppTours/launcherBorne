@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.gson.FieldNamingPolicy;
@@ -16,6 +17,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+import fr.wonder.GameInfo.Highscore;
+import fr.wonder.commons.files.FilesUtils;
 import fr.wonder.gl.Texture;
 
 public class GameInfoParser {
@@ -52,11 +55,46 @@ public class GameInfoParser {
 			info.runCommand[0] = new File(info.gameDirectory, info.runCommand[0]).getPath();
 		Arrays.parallelSort(info.tags, (t1,t2) -> t1.name().compareTo(t2.name()));
 
-		// load the vignette
-		if(info.vignette != null)
-			info.vignetteTexture = Texture.loadTexture(new File(info.metaDirectory, info.vignette));
-		if(info.cartridgeImage != null)
-			info.cartridgeTexture = Texture.loadTexture(new File(info.metaDirectory, info.cartridgeImage));
+		// load images
+		info.vignette = loadOptionalTexture(info, "vignette.png");
+		info.cartridge = loadOptionalTexture(info, "cartridge.png");
+		info.controls = loadOptionalTexture(info, "controls.png");
+		info.highscores = loadHighscores(info);
+	}
+	
+	private static Texture loadOptionalTexture(GameInfo game, String fileName) throws IOException {
+		File imageFile = new File(game.metaDirectory, fileName);
+		return imageFile.exists() ? Texture.loadTexture(imageFile) : null;
+	}
+	
+	private static Highscore[] loadHighscores(GameInfo game) throws IOException {
+		File scoreFile = new File(game.gameDirectory, "scores.txt");
+		if(!scoreFile.exists())
+			return null;
+		String content = FilesUtils.read(scoreFile);
+		
+		List<Highscore> scores = new ArrayList<>();
+		for(String line : content.split("\n")) {
+			if(line.startsWith("#") || line.isBlank())
+				continue;
+			scores.add(parseScoreLine(line));
+		}
+		
+		Comparator<Highscore> score = Comparator.comparingInt(h->h.score);
+		Comparator<Highscore> date = Comparator.comparing(h->h.date);
+		scores.sort(score.reversed().thenComparing(date));
+		
+		return scores.toArray(Highscore[]::new);
+	}
+	
+	private static Highscore parseScoreLine(String line) throws IOException {
+		String[] parts = line.replaceAll("[^a-zA-Z ,\\-0-9;]", "").split(";");
+		if(parts.length < 2 || parts.length > 3)
+			throw new IOException("Invalid score line '" + line + "'");
+		String name = parts[0];
+		int score = Integer.parseInt(parts[1]);
+		String date = parts.length > 2 ? parts[2] : "";
+		return new Highscore(name, score, date);
 	}
 	
 	private static Gson buildGson() {
@@ -79,20 +117,19 @@ public class GameInfoParser {
 			@Override
 			public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
 				Class<?> raw = type.getRawType();
-				if(raw.isEnum()) {
-					return new TypeAdapter<T>() {
-						@Override
-						public void write(JsonWriter out, T value) throws IOException {
-							out.value(value.toString().toLowerCase());
-						}
-						@SuppressWarnings({ "rawtypes", "unchecked" })
-						@Override
-						public T read(JsonReader in) throws IOException {
-							return (T) Enum.valueOf((Class)raw, in.nextString().toUpperCase());
-						}
-					};
-				}
-				return null;
+				if(!raw.isEnum())
+					return null;
+				return new TypeAdapter<T>() {
+					@Override
+					public void write(JsonWriter out, T value) throws IOException {
+						out.value(value.toString().toLowerCase());
+					}
+					@SuppressWarnings({ "rawtypes", "unchecked" })
+					@Override
+					public T read(JsonReader in) throws IOException {
+						return (T) Enum.valueOf((Class)raw, in.nextString().toUpperCase());
+					}
+				};
 			}
 		});
 		

@@ -6,10 +6,14 @@ import static fr.wonder.Keys.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.IntStream;
 
+import fr.wonder.GameInfo.Highscore;
 import fr.wonder.Launcher.MenuController.MenuState;
 import fr.wonder.audio.AudioManager;
+import fr.wonder.commons.systems.process.ProcessUtils;
 import fr.wonder.gl.GLWindow;
+import fr.wonder.gl.Texture;
 
 public class Launcher {
 	
@@ -34,19 +38,10 @@ public class Launcher {
 	private static PppLogo logo;
 	
 	public static void main(String[] args) {
-		GLWindow.createWindow(1600, 900);
+		GLWindow.createWindow();
 		AudioManager.createSoundSystem();
 		
 		games = GameInfoParser.parseGameInfos();
-		
-//		GameInfo dummy = new GameInfo();
-//		dummy.title = "Dummy";
-//		dummy.description = "A template description spanning\nmultiple lines";
-//		dummy.creationDate = "today";
-//		dummy.authors = new String[] { "albin calais", "charles caillon" };
-//		dummy.tags = new GameTag[] { GameTag.VERSUS, GameTag.COOP, GameTag.PLATFORMER };
-//		for(int i = 0; i < 10; i++)
-//			games.add(dummy);
 		
 		try (GamesManager gamesManager = new GamesManager()) {
 			long firstMillis = System.currentTimeMillis();
@@ -84,6 +79,9 @@ public class Launcher {
 				logo.render(time); // must be after #endFrame(), 3D rendering uses the screen fbo
 				GLWindow.sendFrame();
 			}
+		} finally {
+			GLWindow.dispose();
+			ProcessUtils.runLater(() -> System.exit(0), 1000); // forcibly exit other threads
 		}
 	}
 	
@@ -147,7 +145,9 @@ public class Launcher {
 					Wintool.focusGameLater(3.f);
 					Wintool.focusGameLater(10.f);
 					state = MenuState.PLAYING;
-				} else {
+				} else if(IntStream.of(KEY_BUTTONS).anyMatch(k->k==key)) {
+					gameDetails.nextDetailsPage();
+				} else if(IntStream.of(KEY_DIRECTIONS).anyMatch(k->k==key)) {
 					gamesList.processKey(key);
 				}
 				break;
@@ -253,6 +253,10 @@ public class Launcher {
 						CARTRIDGE_WIDTH,
 						games.get(i), time, currentSelection == i);
 			}
+			
+			Texture tex = TEXTURE_GLOBAL_CONTROLS;
+			use(TEXTURE_SHADER);
+			renderQuad(currentX, 0, WIN_WIDTH*.5f, (float)tex.height/tex.width*WIN_WIDTH*.5f, tex);
 		}
 		
 		private void renderCartridge(float x, float y, float size, GameInfo game, float time, boolean selected) {
@@ -262,9 +266,9 @@ public class Launcher {
 				.setUniform1f("u_time", time)
 				.setUniform1i("u_selected", selected?1:0);
 			renderQuad(x, y, width, height, CARTRIDGE_BG);
-			if(game.cartridgeTexture != null) {
+			if(game.cartridge != null) {
 				use(TEXTURE_SHADER);
-				renderQuad(x+width*.46f, y+height*.3f, width*.46f, height*.64f, game.cartridgeTexture);
+				renderQuad(x+width*.46f, y+height*.3f, width*.46f, height*.64f, game.cartridge);
 				use(CARTRIDGE_SHADER);
 				renderQuad(x, y, width, height, CARTRIDGE_FG);
 			}
@@ -278,30 +282,70 @@ public class Launcher {
 		private static final float TITLE_SIZE = WIN_HEIGHT/15;
 		private static final float DESCRIPTION_SIZE = TITLE_SIZE*.5f;
 		
-		float currentX = WIN_WIDTH*1.05f;
+		private float currentX = WIN_WIDTH*1.05f;
+		
+		private int currentPage = 0;
 		
 		public void render(float time) {
 			currentX = lerpThroughTime(currentX, menu.getState() == MenuState.MAIN_MENU || menu.getState() == MenuState.PLAYING ? WIN_WIDTH*.5f : WIN_WIDTH*1.05f);
 			
 			use(TEXTURE_SHADER);
 			renderQuad(currentX, 0, WIN_WIDTH*.5f, WIN_HEIGHT, INFO_BACKGROUND_TEXTURE);
-			renderQuad(
-					currentX + (WIN_WIDTH*.5f-BIG_VIGNETTE_SIZE)*.5f,
-					WIN_HEIGHT*.5f + (WIN_HEIGHT*.5f-BIG_VIGNETTE_SIZE)*.5f,
-					BIG_VIGNETTE_SIZE, BIG_VIGNETTE_SIZE,
-					selectedGame.vignetteTexture == null ? WIP_TEXTURE : selectedGame.vignetteTexture);
-			renderTextCentered(currentX+WIN_WIDTH*.25f, WIN_HEIGHT*.5f, TITLE_SIZE, FONT_TITLE, selectedGame.title);
-			renderText(currentX+WIN_WIDTH*.05f, WIN_HEIGHT*.5f-TITLE_SIZE*1.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.description);
-			for(int i = 0; i < selectedGame.authors.length; i++)
-				renderText(currentX+WIN_WIDTH*.05f, DESCRIPTION_SIZE*(.5f+i), DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.authors[i]);
-			renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(selectedGame.creationDate, DESCRIPTION_SIZE),
-					DESCRIPTION_SIZE*.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.creationDate);
-			for(int i = 0; i < selectedGame.tags.length; i++) {
-				String text = selectedGame.tags[i].toString();
-				renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(text, DESCRIPTION_SIZE),
-						DESCRIPTION_SIZE*(1.75f+i), DESCRIPTION_SIZE, FONT_PLAIN, text);
-			}
 			
+			if(currentPage == 0) {
+				// cartridge, description and general info
+				renderQuad(
+						currentX + (WIN_WIDTH*.5f-BIG_VIGNETTE_SIZE)*.5f,
+						WIN_HEIGHT*.5f + (WIN_HEIGHT*.5f-BIG_VIGNETTE_SIZE)*.5f,
+						BIG_VIGNETTE_SIZE, BIG_VIGNETTE_SIZE,
+						selectedGame.vignette == null ? WIP_TEXTURE : selectedGame.vignette);
+				renderTextCentered(currentX+WIN_WIDTH*.25f, WIN_HEIGHT*.5f, TITLE_SIZE, FONT_TITLE, selectedGame.title);
+				renderText(currentX+WIN_WIDTH*.05f, WIN_HEIGHT*.5f-TITLE_SIZE*1.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.description);
+				for(int i = 0; i < selectedGame.authors.length; i++)
+					renderText(currentX+WIN_WIDTH*.05f, DESCRIPTION_SIZE*(.5f+i), DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.authors[i]);
+				renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(selectedGame.creationDate, DESCRIPTION_SIZE),
+						DESCRIPTION_SIZE*.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.creationDate);
+				for(int i = 0; i < selectedGame.tags.length; i++) {
+					String text = selectedGame.tags[i].toString();
+					renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(text, DESCRIPTION_SIZE),
+							DESCRIPTION_SIZE*(1.75f+i), DESCRIPTION_SIZE, FONT_PLAIN, text);
+				}
+			} else {
+				// controls and high scores
+				renderTextCentered(currentX+WIN_WIDTH*.25f, WIN_HEIGHT*.5f, TITLE_SIZE, FONT_TITLE, selectedGame.title);
+				if(selectedGame.highscores != null) {
+					for(int i = 0; i < selectedGame.highscores.length; i++) {
+						Highscore hs = selectedGame.highscores[i];
+						float x = currentX + WIN_WIDTH*.05f;
+						float x1 = x, x2 = x+WIN_WIDTH*.5f*.2f, x3 = x+WIN_WIDTH*.5f*.5f;
+						float y = WIN_HEIGHT*.5f-DESCRIPTION_SIZE*1.05f*i-TITLE_SIZE*1.5f;
+						renderText(x1, y, DESCRIPTION_SIZE, FONT_PLAIN, hs.name);
+						renderText(x2, y, DESCRIPTION_SIZE, FONT_PLAIN, hs.date);
+						renderText(x3, y, DESCRIPTION_SIZE, FONT_PLAIN, String.valueOf(hs.score));
+					}
+				} else {
+					renderTextCentered(currentX + WIN_WIDTH*.25f, WIN_HEIGHT*.25f, DESCRIPTION_SIZE, FONT_PLAIN, "No highscores");
+				}
+				
+				if(selectedGame.controls != null) {
+					float r = Math.min(
+							BIG_VIGNETTE_SIZE/selectedGame.controls.width,
+							BIG_VIGNETTE_SIZE/selectedGame.controls.height);
+					float w = selectedGame.controls.width*r;
+					float h = selectedGame.controls.height*r;
+					float cx = currentX + WIN_WIDTH*.25f;
+					float cy = WIN_HEIGHT*.75f;
+					renderQuad(cx-w*.5f, cy-h*.5f, w, h, INFO_BACKGROUND_TEXTURE);
+					renderQuad(cx-w*.48f, cy-h*.48f, w*.96f, h*.96f, selectedGame.controls);
+				} else {
+					renderTextCentered(currentX + WIN_WIDTH*.25f, WIN_HEIGHT*.75f, DESCRIPTION_SIZE, FONT_PLAIN, "No controls (WIP)");
+				}
+			}
+		}
+		
+		public void nextDetailsPage() {
+			currentPage++;
+			currentPage %= 2;
 		}
 		
 	}
@@ -331,7 +375,7 @@ public class Launcher {
 			}
 			playtimeStr += String.format("%02ds", playtime);
 			playtimeStr += ".".repeat(playtime%3+1);
-			renderText(currentX + WIN_WIDTH*.2f, WIN_HEIGHT*.5f, WIN_HEIGHT*.05f, FONT_PLAIN, "Playing for\n" + playtimeStr);
+			renderText(currentX + WIN_WIDTH*.2f, WIN_HEIGHT*.5f, WIN_HEIGHT*.05f, FONT_PLAIN, "Playing since\n" + playtimeStr);
 			if(forceQuitKeyCount != 0)
 				renderText(currentX + WIN_WIDTH*.05f, WIN_HEIGHT*.05f, WIN_HEIGHT*.025f, FONT_PLAIN, "Press <esc> " + forceQuitKeyCount + " more times to quit forcibly");
 		}
