@@ -157,7 +157,8 @@ public class GLWindow {
 	}
 
 	public static void hide() {
-		glfwHideWindow(window);
+//		glfwHideWindow(window);
+		glfwIconifyWindow(window);
 	}
 	
 }

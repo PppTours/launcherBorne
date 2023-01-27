@@ -59,12 +59,21 @@ public class GameInfoParser {
 		info.vignette = loadOptionalTexture(info, "vignette.png");
 		info.cartridge = loadOptionalTexture(info, "cartridge.png");
 		info.controls = loadOptionalTexture(info, "controls.png");
-		info.highscores = loadHighscores(info);
+		reloadHighscores(info);
 	}
 	
 	private static Texture loadOptionalTexture(GameInfo game, String fileName) throws IOException {
 		File imageFile = new File(game.metaDirectory, fileName);
 		return imageFile.exists() ? Texture.loadTexture(imageFile) : null;
+	}
+	
+	public static void reloadHighscores(GameInfo info) {
+		info.highscores = null;
+		try {
+			info.highscores = loadHighscores(info);
+		} catch (IOException e) {
+			logger.log("$rCould not load highscores: %s", e);
+		}
 	}
 	
 	private static Highscore[] loadHighscores(GameInfo game) throws IOException {

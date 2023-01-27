@@ -1,17 +1,48 @@
 package fr.wonder;
 
-import static fr.wonder.Audio.*;
-import static fr.wonder.Renderer.*;
-import static fr.wonder.Keys.*;
+import static fr.wonder.Audio.MUSIC;
+import static fr.wonder.Audio.MUSIC_SOURCE;
+import static fr.wonder.Audio.SFX_SELECTION;
+import static fr.wonder.Audio.SFX_SOURCES;
+import static fr.wonder.Audio.SFX_TRANSITION;
+import static fr.wonder.Keys.KEY_BUTTONS;
+import static fr.wonder.Keys.KEY_DIRECTIONS;
+import static fr.wonder.Keys.KEY_DOWN;
+import static fr.wonder.Keys.KEY_LEFT;
+import static fr.wonder.Keys.KEY_QUIT1;
+import static fr.wonder.Keys.KEY_QUIT2;
+import static fr.wonder.Keys.KEY_RIGHT;
+import static fr.wonder.Keys.KEY_START;
+import static fr.wonder.Keys.KEY_UP;
+import static fr.wonder.Keys.isKeyPressed;
+import static fr.wonder.Renderer.BACKGROUND_SHADER;
+import static fr.wonder.Renderer.CARTRIDGE_BG;
+import static fr.wonder.Renderer.CARTRIDGE_FG;
+import static fr.wonder.Renderer.CARTRIDGE_SHADER;
+import static fr.wonder.Renderer.FONT_PLAIN;
+import static fr.wonder.Renderer.FONT_TITLE;
+import static fr.wonder.Renderer.INFO_BACKGROUND_TEXTURE;
+import static fr.wonder.Renderer.TEXTURE_GLOBAL_CONTROLS;
+import static fr.wonder.Renderer.TEXTURE_SHADER;
+import static fr.wonder.Renderer.WIN_HEIGHT;
+import static fr.wonder.Renderer.WIN_WIDTH;
+import static fr.wonder.Renderer.WIP_TEXTURE;
+import static fr.wonder.Renderer.endFrame;
+import static fr.wonder.Renderer.prepareFrame;
+import static fr.wonder.Renderer.renderQuad;
+import static fr.wonder.Renderer.renderText;
+import static fr.wonder.Renderer.renderTextCentered;
+import static fr.wonder.Renderer.use;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.IntStream;
 
+import fr.wonder.GameInfo.GameMod;
 import fr.wonder.GameInfo.Highscore;
 import fr.wonder.Launcher.MenuController.MenuState;
 import fr.wonder.audio.AudioManager;
 import fr.wonder.commons.systems.process.ProcessUtils;
+import fr.wonder.commons.utils.ArrayOperator;
 import fr.wonder.gl.GLWindow;
 import fr.wonder.gl.Texture;
 
@@ -139,15 +170,17 @@ public class Launcher {
 					Wintool.shutdowComputer();
 					System.exit(0);
 				} else if(key == KEY_START) {
+					if(selectedGame.hasMod(GameMod.HIDE_LAUNCHER))
+						GLWindow.hide();
 					gamesManager.runGame(selectedGame);
 					playingPanel.setGameStartTime(time);
 					MUSIC_SOURCE.pause();
-					Wintool.focusGameLater(3.f);
-					Wintool.focusGameLater(10.f);
+//					Wintool.focusGameLater(3.f);
+//					Wintool.focusGameLater(10.f);
 					state = MenuState.PLAYING;
-				} else if(IntStream.of(KEY_BUTTONS).anyMatch(k->k==key)) {
+				} else if(ArrayOperator.contains(KEY_BUTTONS, key)) {
 					gameDetails.nextDetailsPage();
-				} else if(IntStream.of(KEY_DIRECTIONS).anyMatch(k->k==key)) {
+				} else if(ArrayOperator.contains(KEY_DIRECTIONS, key)) {
 					gamesList.processKey(key);
 				}
 				break;
@@ -178,6 +211,7 @@ public class Launcher {
 					MUSIC_SOURCE.resume();
 					GLWindow.hide();
 					GLWindow.show(WINDOW_FULLSCREEN);
+					GameInfoParser.reloadHighscores(selectedGame);
 				}
 				break;
 			}

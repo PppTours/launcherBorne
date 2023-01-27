@@ -2,6 +2,7 @@ package fr.wonder;
 
 import java.io.File;
 
+import fr.wonder.commons.utils.ArrayOperator;
 import fr.wonder.gl.Texture;
 
 public class GameInfo {
@@ -17,6 +18,7 @@ public class GameInfo {
 	public String[] authors;
 	public String[] runCommand;
 	public GameTag[] tags;
+	public GameMod[] mods;
 	
 	// read from meta/*.png files
 	public Texture vignette;
@@ -25,6 +27,10 @@ public class GameInfo {
 	
 	// read from game/scores.txt
 	public Highscore[] highscores;
+	
+	public boolean hasMod(GameMod mod) {
+		return mods != null && ArrayOperator.contains(mods, mod);
+	}
 	
 	public static enum GameTag {
 		
@@ -44,6 +50,12 @@ public class GameInfo {
 		public String toString() {
 			return name().toLowerCase().replaceAll("_", " ");
 		}
+		
+	}
+	
+	public static enum GameMod {
+		
+		HIDE_LAUNCHER;
 		
 	}
 	
