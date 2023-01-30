@@ -29,6 +29,7 @@ public class Wintool {
 
 	public static void shutdowComputer() {
 		try {
+			logger.log("Shuting down computer");
 			Process p = Runtime.getRuntime().exec(new String[] { "shutdown", "/p", "/f" });
 			int status;
 			if((status = p.waitFor()) != 0)

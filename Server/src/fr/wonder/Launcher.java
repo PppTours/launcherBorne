@@ -54,13 +54,12 @@ public class Launcher {
 	
 	public static final boolean DEBUG_ENV = System.getenv().containsKey("DEBUG_ENV");
 	
-	private static final boolean WINDOW_FULLSCREEN = !DEBUG_ENV;
-	
 	private static List<GameInfo> games;
 	private static GameInfo selectedGame;
 	
 	private static MenuController menu;
 	private static GamesManager gamesManager;
+	private static AutoShutdown autoShutdown;
 	
 	private static GamesList gamesList;
 	private static GameDetails gameDetails;
@@ -76,6 +75,9 @@ public class Launcher {
 		
 		try (GamesManager gamesManager = new GamesManager()) {
 			long firstMillis = System.currentTimeMillis();
+			
+			autoShutdown = new AutoShutdown();
+			autoShutdown.delay();
 
 			menu = new MenuController();
 			gamesList = new GamesList();
@@ -90,11 +92,12 @@ public class Launcher {
 			GLWindow.setKeyCallback(key -> {
 				float time = (System.currentTimeMillis()-firstMillis)/1000.f;
 				menu.processKey(time, key);
+				autoShutdown.delay();
 			});
 			
 			menu.start();
 			
-			GLWindow.show(WINDOW_FULLSCREEN);
+			GLWindow.show();
 			Wintool.focusActiveWindow();
 			
 			while(!GLWindow.shouldDispose()) {
@@ -109,6 +112,14 @@ public class Launcher {
 				endFrame();
 				logo.render(time); // must be after #endFrame(), 3D rendering uses the screen fbo
 				GLWindow.sendFrame();
+				
+				if(autoShutdown.shouldShutdown(time)) {
+					if(DEBUG_ENV)
+						System.exit(0);
+					else
+						Wintool.shutdowComputer();
+					return;
+				}
 			}
 		} finally {
 			GLWindow.dispose();
@@ -173,6 +184,7 @@ public class Launcher {
 					if(selectedGame.hasMod(GameMod.HIDE_LAUNCHER))
 						GLWindow.hide();
 					gamesManager.runGame(selectedGame);
+					autoShutdown.pause();
 					playingPanel.setGameStartTime(time);
 					MUSIC_SOURCE.pause();
 //					Wintool.focusGameLater(3.f);
@@ -207,10 +219,12 @@ public class Launcher {
 			case PLAYING:
 				if(!gamesManager.isGameRunning()) {
 					state = MenuState.MAIN_MENU;
+					autoShutdown.resume();
+					autoShutdown.delay();
 					idleTime = time;
 					MUSIC_SOURCE.resume();
 					GLWindow.hide();
-					GLWindow.show(WINDOW_FULLSCREEN);
+					GLWindow.show();
 					GameInfoParser.reloadHighscores(selectedGame);
 				}
 				break;

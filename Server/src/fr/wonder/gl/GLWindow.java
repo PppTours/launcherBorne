@@ -87,22 +87,11 @@ public class GLWindow {
 		});
 	}
 	
-	public static void show(boolean fullScreen) {
+	public static void show() {
 		glfwShowWindow(window);
 		glfwFocusWindow(window);
 		glfwMaximizeWindow(window);
 		glfwRestoreWindow(window);
-//		int[] w = new int[1], h = new int[1];
-//		glfwGetWindowSize(window, w, h);
-//		glViewport(0, 0, w[0], h[0]);
-//		System.out.println(w[0] + " " + h[0]);
-//		if(fullScreen) {
-//			long monitor = glfwGetPrimaryMonitor();
-//			int[] width = new int[1], height = new int[1];
-//			int[] xpos = new int[1], ypos = new int[1];
-//			glfwGetMonitorWorkarea(monitor, xpos, ypos, width, height);
-//			glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, width[0], height[0], GLFW_DONT_CARE);
-//		}
 	}
 	
 	public static void setResizeCallback(BiConsumer<Integer, Integer> resizeCallback) {
