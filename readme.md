@@ -1,9 +1,12 @@
 ## Borne d'arcade - fiche technique
 
-**EN** This is the launcher utility for P++'s arcade.\\
+**EN** This is the launcher utility for P++'s arcade.\
 **FR** Ceci est l'utilitaire de lancement pour les jeux de la borne d'arcade.
 
 ### Dev. des jeux
+
+Les jeux sont développés principalement par P++, si vous avez un jeu à publier ou une suggestion à apporter faites ça sur le discord.
+Si vous voulez développer un jeu, lisez la suite... Si vous faites du java vous pouvez développer à partir de [Akahara/retro-games](https://github.com/Akahara/retro-games) (shameless ad).
 
 #### Contrôles
 
