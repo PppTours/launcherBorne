@@ -8,13 +8,19 @@
 Les jeux sont développés principalement par P++, si vous avez un jeu à publier ou une suggestion à apporter faites ça sur le discord.
 Si vous voulez développer un jeu, lisez la suite... Si vous faites du java vous pouvez développer à partir de [Akahara/retro-games](https://github.com/Akahara/retro-games) (shameless ad).
 
+#### Gestion de la fenêtre
+
+Le jeu doit s'ouvrir en "borderless fullscreen", le plein-ecran simple peut poser quelques problêmes. Pas besoin de demander le focus de l'application, quand un jeu démarre le launcher effectue un click gauche au centre de l'écran pour être sûr que le focus est bien sur le jeu.
+
+> Quelques jeux peuvent avoir besoin de s'ouvrir *après* que le launcher se soit caché, dans ce cas il faut ajouter `hide_launcher` à la liste `mods` du game.json.
+
 #### Contrôles
 
 Layout des touches utilisées :
 
 ![](doc/controls-to-keys.png)
 
-Par convention le bouton blanc du milieu sert à lancer *et quitter* les jeux.
+Par convention le bouton blanc du milieu sert à lancer **et quitter** les jeux.
 Pour publier un jeu faites une notices des contrôles, il y a la police à utiliser et les images nécessaires dans `doc/`.
 Les images sont en svg, il faut les exporter en png.
 
@@ -66,12 +72,15 @@ Format à suivre :
     "description":     multiline string,
     "authors":         string[],
     "run_command":     string[],
-    "tags":            tag[]
+    "tags":            tag[],
+    "mods":            mod[],
 }
 ```
 
-La descritption doit contenir les `\n`, une ligne fait environ 20 charactères max.
-Tags possibles : `versus`, `coop`, `solo`, `platformer`, `shoot them up`, `beat them up`, `rpg`, `gestion`, `strategy`, `puzzle`, `fighting game`.
+La descritption doit contenir les `\n`, une ligne fait environ 20 charactères max. Les mods sont des actions que doit effectuer le launcher qui sont spécifiques au jeu, par défaut il n'y en a pas besoin.
+
+Tags possibles : `versus`, `coop`, `solo`, `platformer`, `shoot them up`, `beat them up`, `rpg`, `gestion`, `strategy`, `puzzle`, `fighting game`.\
+Mods possibles : `hide_launcher`.
 
 Exemple :
 ```json
@@ -81,7 +90,8 @@ Exemple :
     "description": "Pong.\n\nCopie du jeu retro\nVictoire en 10 points",
     "authors": [ "Albin" ],
     "run_command": [ "java", "-jar", "retro-games.jar", "pong" ],
-    "tags": [ "versus" ]
+    "tags": [ "versus" ],
+    "mods": [],
 }
 ```
 
