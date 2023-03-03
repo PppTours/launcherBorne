@@ -91,6 +91,7 @@ public class GameInfoParser {
 		
 		Comparator<Highscore> score = Comparator.comparingInt(h->h.score);
 		Comparator<Highscore> date = Comparator.comparing(h->h.date);
+		scores.removeIf(s -> s.score <= 0);
 		scores.sort(score.reversed().thenComparing(date));
 		
 		return scores.toArray(Highscore[]::new);

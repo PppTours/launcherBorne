@@ -2,8 +2,8 @@ package fr.wonder;
 
 public class AutoShutdown {
 	
-	private static final float SHUTDOWN_INACTIVITY_THRESHOLD = 120;
-	private static final float SHUTDOWN_INFO_DELAY = 90;
+	private static final float SHUTDOWN_INACTIVITY_THRESHOLD = 500;
+	private static final float SHUTDOWN_INFO_DELAY = 450;
 	
 	private static final Logger logger = new Logger("shutdown");
 	

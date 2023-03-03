@@ -181,7 +181,9 @@ public class Launcher {
 					Wintool.shutdowComputer();
 					System.exit(0);
 				} else if(key == KEY_START) {
-					if(selectedGame.hasMod(GameMod.HIDE_LAUNCHER))
+//					if(selectedGame.hasMod(GameMod.HIDE_LAUNCHER))
+					// this was only necessary for SpaceCadetPinball before some windows update
+					// now it is required for all games
 						GLWindow.hide();
 					gamesManager.runGame(selectedGame);
 					autoShutdown.pause();
@@ -302,9 +304,11 @@ public class Launcher {
 						games.get(i), time, currentSelection == i);
 			}
 			
-			Texture tex = TEXTURE_GLOBAL_CONTROLS;
-			use(TEXTURE_SHADER);
-			renderQuad(currentX, 0, WIN_WIDTH*.5f, (float)tex.height/tex.width*WIN_WIDTH*.5f, tex);
+			if((time/3-Math.floor(time/3) > .3f)) {
+				Texture tex = TEXTURE_GLOBAL_CONTROLS;
+				use(TEXTURE_SHADER);
+				renderQuad(currentX, 0, WIN_WIDTH*.5f, (float)tex.height/tex.width*WIN_WIDTH*.5f, tex);
+			}
 		}
 		
 		private void renderCartridge(float x, float y, float size, GameInfo game, float time, boolean selected) {
