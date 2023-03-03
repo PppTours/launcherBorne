@@ -5,39 +5,12 @@ import static fr.wonder.Audio.MUSIC_SOURCE;
 import static fr.wonder.Audio.SFX_SELECTION;
 import static fr.wonder.Audio.SFX_SOURCES;
 import static fr.wonder.Audio.SFX_TRANSITION;
-import static fr.wonder.Keys.KEY_BUTTONS;
-import static fr.wonder.Keys.KEY_DIRECTIONS;
-import static fr.wonder.Keys.KEY_DOWN;
-import static fr.wonder.Keys.KEY_LEFT;
-import static fr.wonder.Keys.KEY_QUIT1;
-import static fr.wonder.Keys.KEY_QUIT2;
-import static fr.wonder.Keys.KEY_RIGHT;
-import static fr.wonder.Keys.KEY_START;
-import static fr.wonder.Keys.KEY_UP;
-import static fr.wonder.Keys.isKeyPressed;
-import static fr.wonder.Renderer.BACKGROUND_SHADER;
-import static fr.wonder.Renderer.CARTRIDGE_BG;
-import static fr.wonder.Renderer.CARTRIDGE_FG;
-import static fr.wonder.Renderer.CARTRIDGE_SHADER;
-import static fr.wonder.Renderer.FONT_PLAIN;
-import static fr.wonder.Renderer.FONT_TITLE;
-import static fr.wonder.Renderer.INFO_BACKGROUND_TEXTURE;
-import static fr.wonder.Renderer.TEXTURE_GLOBAL_CONTROLS;
-import static fr.wonder.Renderer.TEXTURE_SHADER;
-import static fr.wonder.Renderer.WIN_HEIGHT;
-import static fr.wonder.Renderer.WIN_WIDTH;
-import static fr.wonder.Renderer.WIP_TEXTURE;
-import static fr.wonder.Renderer.endFrame;
-import static fr.wonder.Renderer.prepareFrame;
-import static fr.wonder.Renderer.renderQuad;
-import static fr.wonder.Renderer.renderText;
-import static fr.wonder.Renderer.renderTextCentered;
-import static fr.wonder.Renderer.use;
+import static fr.wonder.Keys.*;
+import static fr.wonder.Renderer.*;
 
 import java.io.File;
 import java.util.List;
 
-import fr.wonder.GameInfo.GameMod;
 import fr.wonder.GameInfo.Highscore;
 import fr.wonder.Launcher.MenuController.MenuState;
 import fr.wonder.audio.AudioManager;
@@ -51,6 +24,7 @@ public class Launcher {
 	/* Note to the maintainer: don't */
 	
 	public static final File GAMES_DIR = new File("games");
+	public static final File TIMESTAMPS_FILE = new File("playtimes.txt");
 	
 	public static final boolean DEBUG_ENV = System.getenv().containsKey("DEBUG_ENV");
 	
@@ -156,11 +130,12 @@ public class Launcher {
 	
 	static class MenuController {
 		
-		private static final float ALLOWED_IDLE_TIME = 10.f;
+		private static final float ALLOWED_IDLE_TIME = 15.f;
 		
 		private MenuState state = MenuState.IDLE;
 		private int quitGameKeyCount = 3;
 		private float idleTime = 0;
+		private long gameStartTime;
 		
 		public void start() {
 			MUSIC_SOURCE
@@ -188,6 +163,7 @@ public class Launcher {
 					gamesManager.runGame(selectedGame);
 					autoShutdown.pause();
 					playingPanel.setGameStartTime(time);
+					gameStartTime = System.currentTimeMillis();
 					MUSIC_SOURCE.pause();
 //					Wintool.focusGameLater(3.f);
 //					Wintool.focusGameLater(10.f);
@@ -220,14 +196,17 @@ public class Launcher {
 				break;
 			case PLAYING:
 				if(!gamesManager.isGameRunning()) {
+					int playTime = (int) ((System.currentTimeMillis()-gameStartTime)/1000);
+					selectedGame.totalPlaytime += playTime;
 					state = MenuState.MAIN_MENU;
+					idleTime = time;
 					autoShutdown.resume();
 					autoShutdown.delay();
-					idleTime = time;
 					MUSIC_SOURCE.resume();
 					GLWindow.hide();
 					GLWindow.show();
 					GameInfoParser.reloadHighscores(selectedGame);
+					GameInfoParser.writePlaytime(selectedGame, playTime);
 				}
 				break;
 			}
@@ -354,13 +333,16 @@ public class Launcher {
 				renderTextCentered(currentX+WIN_WIDTH*.25f, WIN_HEIGHT*.5f, TITLE_SIZE, FONT_TITLE, selectedGame.title);
 				renderText(currentX+WIN_WIDTH*.05f, WIN_HEIGHT*.5f-TITLE_SIZE*1.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.description);
 				for(int i = 0; i < selectedGame.authors.length; i++)
-					renderText(currentX+WIN_WIDTH*.05f, DESCRIPTION_SIZE*(.5f+i), DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.authors[i]);
+					renderText(currentX+WIN_WIDTH*.05f, DESCRIPTION_SIZE*(1.5f+i), DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.authors[i]);
 				renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(selectedGame.creationDate, DESCRIPTION_SIZE),
 						DESCRIPTION_SIZE*.5f, DESCRIPTION_SIZE, FONT_PLAIN, selectedGame.creationDate);
+				String playtimeText = "played for " + PlayingPanel.timeToStr(selectedGame.totalPlaytime);
+				renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(playtimeText, DESCRIPTION_SIZE),
+						DESCRIPTION_SIZE*1.5f, DESCRIPTION_SIZE, FONT_PLAIN, playtimeText);
 				for(int i = 0; i < selectedGame.tags.length; i++) {
 					String text = selectedGame.tags[i].toString();
 					renderText(currentX+WIN_WIDTH*.45f-FONT_PLAIN.getLineLength(text, DESCRIPTION_SIZE),
-							DESCRIPTION_SIZE*(1.75f+i), DESCRIPTION_SIZE, FONT_PLAIN, text);
+							DESCRIPTION_SIZE*(2.75f+i), DESCRIPTION_SIZE, FONT_PLAIN, text);
 				}
 			} else {
 				// controls and high scores
@@ -416,20 +398,26 @@ public class Launcher {
 			currentX = lerpThroughTime(currentX, menu.getState() == MenuState.PLAYING ? 0 : -WIN_WIDTH*.55f);
 			
 			int playtime = (int)(time-gameStartTime);
-			String playtimeStr = "";
-			if(playtime > 3600) {
-				playtimeStr += String.format("%02dh", playtime/3600);
-				playtime %= 3600;
-			}
-			if(playtime > 60) {
-				playtimeStr += String.format("%02dmin", playtime/60);
-				playtime %= 60;
-			}
-			playtimeStr += String.format("%02ds", playtime);
-			playtimeStr += ".".repeat(playtime%3+1);
+			String playtimeStr = timeToStr(playtime) + ".".repeat(playtime%3+1);
 			renderText(currentX + WIN_WIDTH*.2f, WIN_HEIGHT*.5f, WIN_HEIGHT*.05f, FONT_PLAIN, "Playing since\n" + playtimeStr);
 			if(forceQuitKeyCount != 0)
 				renderText(currentX + WIN_WIDTH*.05f, WIN_HEIGHT*.05f, WIN_HEIGHT*.025f, FONT_PLAIN, "Press <esc> " + forceQuitKeyCount + " more times to quit forcibly");
+		}
+		
+		public static String timeToStr(int seconds) {
+			String playtimeStr = "";
+			if(seconds > 3600) {
+				playtimeStr += String.format("%02dh", seconds/3600);
+				seconds %= 3600;
+			}
+			if(seconds > 60) {
+				playtimeStr += String.format("%02dmin", seconds/60);
+				seconds %= 60;
+			}
+			playtimeStr += String.format("%02ds", seconds);
+			if(playtimeStr.startsWith("0") && playtimeStr.length() > 1)
+				playtimeStr = playtimeStr.substring(1);
+			return playtimeStr;
 		}
 		
 		public void setForceQuitKeyCount(int remaining) {

@@ -27,6 +27,8 @@ public class GameInfo {
 	
 	// read from game/scores.txt
 	public Highscore[] highscores;
+	// read from timestamps.txt
+	public int totalPlaytime; // in seconds
 	
 	public boolean hasMod(GameMod mod) {
 		return mods != null && ArrayOperator.contains(mods, mod);

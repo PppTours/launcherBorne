@@ -1,12 +1,17 @@
 package fr.wonder;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -40,6 +45,8 @@ public class GameInfoParser {
 				logger.log("$rCould not read game $w%s$r info: %s", f.getName(), e);
 			}
 		}
+		
+		loadPlaytimes(games);
 		
 		return games;
 	}
@@ -105,6 +112,34 @@ public class GameInfoParser {
 		int score = Integer.parseInt(parts[1]);
 		String date = parts.length > 2 ? parts[2] : "";
 		return new Highscore(name, score, date);
+	}
+	
+	public static void loadPlaytimes(List<GameInfo> infos) {
+		try {
+			String[] lines = FilesUtils.read(Launcher.TIMESTAMPS_FILE).split("\n");
+			Map<String, Integer> playtimes = new HashMap<>();
+			for(String l : lines) {
+				String[] parts = l.split(";");
+				int playtime = Integer.parseInt(parts[1]);
+				String gameName = parts[2];
+				playtimes.compute(gameName, (_k, v) -> v==null ? playtime : v+playtime);
+			}
+			for(GameInfo i : infos) {
+				i.totalPlaytime = playtimes.getOrDefault(i.title, 0);
+			}
+		} catch (Throwable t) { // catch all exceptions, an error here must not crash anything
+			logger.log("$rCould not read playtime: %s", t.getMessage());
+		}
+	}
+
+	public static void writePlaytime(GameInfo game, int playTime) {
+		try (OutputStream os = new FileOutputStream(Launcher.TIMESTAMPS_FILE, true)) {
+			LocalDate today = LocalDate.now();
+			os.write(String.format("%02d-%02d-%04d;%d;%s\n",
+					today.getDayOfMonth(), today.getMonthValue(), today.getYear(), playTime, game.title).getBytes());
+		} catch (IOException e) {
+			logger.log("$rCould not write playtime: %s", e.getMessage());
+		}
 	}
 	
 	private static Gson buildGson() {
