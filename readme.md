@@ -128,6 +128,8 @@ Pas de score à virgule. Pas besoin de trier les lignes (elles sont triées auto
 
 Pour les projets qui ne sont pas *de P++*, on vous demande d'au moins mettre votre code sur github en publique, et d'y associer une license qui nous permet de l'utiliser/le modifier. N'importe laquelle fera l'affaire mais la [license MIT](https://opensource.org/license/mit/) est une bonne base. Il vous suffit de la mettre dans un `license.txt` à la racine du repository github.
 
+Et si vous pouvez ajouter un `readme` à votre projet, avec au moins les instructions pour le build/le compiler et possiblement un screenshot c'est sympa ! 
+
 > On vous demande les droits de modification pour pouvoir réparer les jeux si on en a besoin un jour et possiblement laisser des gens de P++ continuer à développer les jeux. Si ça vous embête faites-le savoir, on s'arrangera.
 
 ## Maintient de la borne
